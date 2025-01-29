@@ -98,11 +98,15 @@ pub async fn automated_summarized_messages(channel_id: ChannelId, token: String,
 
 pub async fn generate_report(pool: &PgPool) -> Result<String, Box<dyn std::error::Error>> {
     let date_yesterday = chrono::Utc::now().date_naive() - chrono::Days::new(1);
-    let res: serde_json::Value =
+    let res: Option<serde_json::Value> =
         sqlx::query_scalar("SELECT jsonb_agg(data) FROM messages WHERE created::date = $1")
             .bind(date_yesterday)
             .fetch_one(pool)
             .await?;
+
+    let Some(res) = res else {
+        return Err("There were no messages in the database :(".into());
+    };
 
     let raw_json = serde_json::to_string_pretty(&res).unwrap();
 

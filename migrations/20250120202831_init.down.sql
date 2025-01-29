@@ -1,2 +1,4 @@
 -- Add down migration script here
-drop table messages;
+drop table if exists messages;
+
+drop table if exists summaries;
